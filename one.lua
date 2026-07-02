@@ -38,16 +38,18 @@ local function findTrunk(tree)--tree: Instances named "Model" in TreeRegion
 end
 
 local function swingTree(WoodSection)
-	local axeClass = require(game.ReplicatedStorage.AxeClasses["AxeClass_" .. Player.Backpack.Tool:WaitForChild("ToolName").Value]).new(Player.Backpack.Tool)
+	local Axe = require(game.ReplicatedStorage.AxeClasses["AxeClass_" .. Player.Backpack.Tool:WaitForChild("ToolName").Value]).new(Player.Backpack.Tool)
 
-	local Event = game:GetService("ReplicatedStorage").Interaction.RemoteProxy
-	Event:FireServer(
-		WoodSection.Parent.CutEvent,
-		{
-			axeClass
-		}
-	)
-)
+	game.ReplicatedStorage.Interaction.RemoteProxy:FireServer(WoodSection.Parent.CutEvent, {
+						["cuttingClass"] = "Axe",
+						["sectionId"] = WoodSection.ID.Value,
+						["faceVector"] = Vector3.new(0,0,1),
+						["height"] = 0,
+						["hitPoints"] = Axe.hitPoint,
+						["cooldown"] = 0.65 * Axe.SwingCooldown - 0,
+						["tool"] = p25.Tool
+					})
+end
 
 local function chopTree(WoodSection)
 	while true do
