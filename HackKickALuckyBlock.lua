@@ -1,11 +1,10 @@
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-
 local KickEvent = game:GetService("ReplicatedStorage").Shared.Packages.Network.rev_KickEvent
 local SellEvent = game:GetService("ReplicatedStorage").Shared.Packages.Network.ref_B_Sell
-
-local placedParts = {}
-
+local auto = false
+local stop = false
+local player = game:GetService("Players").LocalPlayer
 local ListOfRarity = {
 	["Common"] = false,
 	["Uncommon"] = false,
@@ -17,59 +16,40 @@ local ListOfRarity = {
 	["Secret"] = false,
 	["Divine"] = false,
 	["Hacked"] = false,
-	["OG"] = true,
+	["OG"] = false,
 	["Celestial"] = true,
 }
-
-local auto = false
-local stop = false
-
-local player = game.Players.LocalPlayer
-
+local numberUnit = {
+	[""] = 1,
+	["K"] = 10^3,
+	["M"] = 10^6,
+	["B"] = 10^9,
+	["T"] = 10^12,
+	["Q"] = 10^15,
+	["QN"] = 10^18,
+}
+local function advancedToNumber(obj:string)
+	local numericPart = string.match(obj, "%d+%.?%d*") or ""
+	local letterPart = string.match(obj, "%a+") or ""
+	local splittedString  = string.split(obj)
+	return tonumber(numericPart) * numberUnit[letterPart]
+end
+local function removeCharacters(inputString ,charsToRemove)
+	local patternChars = ""
+	for _, char in ipairs(charsToRemove) do
+		local escaped = char:gsub("([^%w])", "%%%1")
+		patternChars = patternChars .. escaped
+	end
+	local pattern = "[" .. patternChars .. "]"
+	local result = string.gsub(inputString, pattern, "")
+	return result
+end
 local function TweenToCFrame(cframe ,t)
 	local character = player.Character or player.CharacterAdded:Wait()
 	local rootPart = character:WaitForChild("HumanoidRootPart")
 	
 	return TweenService:Create(rootPart ,TweenInfo.new(t,Enum.EasingStyle.Linear) ,{CFrame = cframe})
 end
-
-local function findFirstDescendant(AncestorInstance ,Name)
-	if #AncestorInstance:GetDescendants() < 1 then
-		warn(AncestorInstance.Name .. " have no desendants!")
-		return
-	end
-	for k,instance in pairs(AncestorInstance:GetDescendants()) do
-		if instance.Name == Name then return instance end
-	end
-end
-
-local function placePartUnderPlayer()
-	local part = Instance.new("Part")
-	
-	local character = player.Character or player.CharacterAdded:Wait()
-	local rootPart = character:WaitForChild("HumanoidRootPart")
-	
-	table.insert(placedParts ,part)
-	
-	part.Anchored = true
-	part.Size = Vector3.new(10,1,10)
-	part.Position = rootPart.CFrame.Position + Vector3.new(0,-3,0)
-	
-	part.Parent = workspace
-	
-end
-
-local function chooseRandomInstance(parentInstance)
-	local AllChildren = parentInstance:GetChildren()
-	
-	if #AllChildren < 1 then
-		warn(parentInstance.Name .. " have no children!")
-		return false
-	end
-	
-	return AllChildren[math.random(1,#AllChildren)]
-end
-
 local function waitUntilProperty(instance,property,value,timeOut)
 	while true do 
 		task.wait()
@@ -78,7 +58,6 @@ local function waitUntilProperty(instance,property,value,timeOut)
 		end
 	end
 end
-
 UserInputService.InputBegan:Connect(function(i,e)
 	if e then return end
 	if i.KeyCode == Enum.KeyCode.T then
@@ -88,20 +67,14 @@ UserInputService.InputBegan:Connect(function(i,e)
 		stop = true
 	end
 end)
-
-player.CharacterAdded:Connect(function(character)
-
-end)
-
 while true do
 	task.wait()
 	if stop == true then return end
 	if auto == true then
 		local t1 = TweenToCFrame(CFrame.new(690, 3, 225) ,1)
-
 		t1:Play()
 		task.wait(1)
-		KickEvent:FireServer(1,2)
+		KickEvent:FireServer(1,1)
 		waitUntilProperty(player.Character.HumanoidRootPart,"Anchored",true,20)
 		waitUntilProperty(player.Character.HumanoidRootPart,"Anchored",false,20)
 		local speed = player.Character.Humanoid.WalkSpeed +  10
@@ -110,15 +83,22 @@ while true do
 		local t2 = TweenToCFrame(CFrame.new(690, -7, 225) ,time)
 		t2:Play()
 		t2.Completed:Wait()
-		local t3 = TweenToCFrame(CFrame.new(690, 3, 225) ,1)
+		local t3 = TweenToCFrame(CFrame.new(690, 3, 225) ,0.1)
 		t3:Play()
 		t3.Completed:Wait()
-		local rarity = player.Character:FindFirstChildWhichIsA("Tool"):FindFirstChildWhichIsA("Model").Root.EntityGUI.Frame.RarityLabel.Text
-		if not ListOfRarity[rarity]  then
-			local t4 = TweenToCFrame(CFrame.new(730, 3, 337) ,1)
-			t4:Play()
-			t4.Completed:Wait()
-			SellEvent:InvokeServer()
+		task.wait(0.5)
+		local a = player.Character:FindFirstChildWhichIsA("Tool"):FindFirstChildWhichIsA("Model")
+		local rarity = a.Root.EntityGUI.Frame.RarityLabel.Text
+		local money = a.Root.EntityGUI.Frame.CPSFrame.Label.Text
+		local b = removeCharacters(money,{"$","/","s"})
+		local realValue = advancedToNumber(b)
+		if not ListOfRarity[rarity] then
+			if realValue < 350000 then
+				local t4 = TweenToCFrame(CFrame.new(730, 3, 337) ,1)
+				t4:Play()
+				t4.Completed:Wait()
+				SellEvent:InvokeServer()
+			end
 		end
 	end
 end
