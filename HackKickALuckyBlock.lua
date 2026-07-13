@@ -86,7 +86,7 @@ while true do
 		local t3 = TweenToCFrame(CFrame.new(690, 3, 225) ,0.1)
 		t3:Play()
 		t3.Completed:Wait()
-		task.wait(1)
+		task.wait(2)
 		local a = player.Character:FindFirstChildWhichIsA("Tool"):FindFirstChildWhichIsA("Model")
 		local rarity = a.Root.EntityGUI.Frame.RarityLabel.Text
 		local money = a.Root.EntityGUI.Frame.CPSFrame.Label.Text
