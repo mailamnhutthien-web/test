@@ -17,7 +17,7 @@ local ListOfRarity = {
 	["Secret"] = false,
 	["Divine"] = false,
 	["Hacked"] = false,
-	["OG"] = true,
+	["OG"] = false,
 	["Celestial"] = true,
 }
 
