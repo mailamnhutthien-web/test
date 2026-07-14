@@ -93,7 +93,7 @@ while true do
 		local b = removeCharacters(money,{"$","/","s"})
 		local realValue = advancedToNumber(b)
 		if not ListOfRarity[rarity] then
-			if realValue < 500000 then
+			if realValue < 1000000 then
 				local t4 = TweenToCFrame(CFrame.new(730, 3, 337) ,1)
 				t4:Play()
 				t4.Completed:Wait()
